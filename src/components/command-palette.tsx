@@ -6,7 +6,6 @@ interface CommandPaletteProps {
   commands: Command[];
   colors: ThemeColors;
   onSelect: (command: Command) => void;
-  onCancel: () => void;
 }
 
 export function CommandPalette({

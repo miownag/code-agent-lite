@@ -18,6 +18,16 @@ export function useTheme() {
         error: '#F85149',
         warning: '#D29922',
         muted: '#8B949E',
+        shimmer: [
+          '#4A5568',
+          '#6B7280',
+          '#9CA3AF',
+          '#D1D5DB',
+          '#F3F4F6',
+          '#D1D5DB',
+          '#9CA3AF',
+          '#6B7280',
+        ],
       };
     } else {
       return {
@@ -32,6 +42,16 @@ export function useTheme() {
         error: '#CF222E',
         warning: '#9A6700',
         muted: '#656D76',
+        shimmer: [
+          '#93C5FD',
+          '#BFDBFE',
+          '#DBEAFE',
+          '#EFF6FF',
+          '#FFFFFF',
+          '#EFF6FF',
+          '#DBEAFE',
+          '#BFDBFE',
+        ],
       };
     }
   }, [mode]);

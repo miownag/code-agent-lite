@@ -19,14 +19,18 @@ export interface DiffData {
   newContent: string;
 }
 
+// 消息内容块类型
+export type MessagePart =
+  | { type: 'text'; content: string }
+  | { type: 'tool_call'; toolCall: ToolCall };
+
 export interface Message {
   id: string;
   role: MessageRole;
-  content: string;
+  parts: MessagePart[]; // 替换原来的 content: string
   timestamp: number;
-  toolCalls?: ToolCall[];
-  diffs?: DiffData[];
   isStreaming?: boolean;
+  hasFirstChunk?: boolean;
 }
 
 export interface Command {
@@ -47,6 +51,7 @@ export interface ThemeColors {
   error: string;
   warning: string;
   muted: string;
+  shimmer: string[];
 }
 
 export interface FileItem {

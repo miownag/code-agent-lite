@@ -1,7 +1,8 @@
 import { Box, Text } from 'ink';
 import type { Message, ThemeColors } from '@/types';
-import { ToolCallView } from '@/components/tool-call-view';
-import { DiffView } from '@/components/diff-view';
+import { MessagePartView } from '@/components/message-part';
+import Spinner from 'ink-spinner';
+import { ShimmerText } from './shimmer-text';
 
 interface ChatHistoryProps {
   messages: Message[];
@@ -28,7 +29,7 @@ export function ChatHistory({ messages, colors }: ChatHistoryProps) {
 
   return (
     <Box flexDirection="column" paddingX={1}>
-      {messages.map((message) => (
+      {messages.map((message, index) => (
         <Box key={message.id} flexDirection="column" marginBottom={1}>
           <Box gap={1} marginBottom={1}>
             <Text
@@ -44,26 +45,24 @@ export function ChatHistory({ messages, colors }: ChatHistoryProps) {
               {message.role === 'user' ? 'You' : 'Agent'}
             </Text>
           </Box>
-          <Box marginLeft={2} flexDirection="column">
-            {message.content && (
-              <Text color={colors.text}>
-                {message.content}
-                {message.isStreaming && <Text color={colors.primary}>▋</Text>}
-              </Text>
-            )}
-            {message.toolCalls && message.toolCalls.length > 0 && (
-              <Box flexDirection="column" marginTop={1}>
-                {message.toolCalls.map((tool) => (
-                  <ToolCallView key={tool.id} toolCall={tool} colors={colors} />
-                ))}
+          <Box marginLeft={2} flexDirection="column" justifyContent="center">
+            {message.role === 'assistant' &&
+            index === messages.length - 1 &&
+            !message.hasFirstChunk ? (
+              <Box>
+                <Spinner type="star" />
+                <ShimmerText> Loading...</ShimmerText>
               </Box>
-            )}
-            {message.diffs && message.diffs.length > 0 && (
-              <Box flexDirection="column" marginTop={1}>
-                {message.diffs.map((diff, idx) => (
-                  <DiffView key={idx} diff={diff} colors={colors} />
-                ))}
-              </Box>
+            ) : (
+              message.parts.map((part, partIndex) => (
+                <MessagePartView
+                  key={partIndex}
+                  part={part}
+                  colors={colors}
+                  isLastPart={partIndex === message.parts.length - 1}
+                  isStreaming={message.isStreaming}
+                />
+              ))
             )}
           </Box>
         </Box>

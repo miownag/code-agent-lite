@@ -1,14 +1,16 @@
 import { Box, useApp, useInput } from 'ink';
 import { useTheme } from '@/hooks/use-theme';
-import { useChat } from '@/hooks/use-chat';
+import { useCodeAgent } from '@/hooks/use-code-agent';
 import { Header } from '@/components/header';
 import { ChatHistory } from '@/components/chat-history.js';
 import { InputBox } from '@/components/input-box';
 import { CommandPalette } from '@/components/command-palette';
-import { AVAILABLE_COMMANDS, AVAILABLE_FILES } from '@/services/mock-agent';
+import { AVAILABLE_COMMANDS } from '@/services/mock-agent';
 import type { Command } from '@/types';
 import useSafeWidth from '@/hooks/use-safe-width';
-import useCodeStore from '@/stores';
+import useSelectorStore from '@/stores';
+import { FileSelector } from './components/file-selector';
+import { FileOption } from './hooks/use-files-options';
 
 type Props = {
   mode?: string;
@@ -17,15 +19,36 @@ type Props = {
 export default function App({}: Props) {
   const { exit } = useApp();
   const { colors, mode: themeMode, toggleTheme } = useTheme();
-  const { messages, isStreaming, sendMessage, clearMessages } = useChat();
-  const { showCommandPalette, updateShowCommandPalette, updateInputValue } =
-    useCodeStore();
+  const { messages, isStreaming, sendMessage, clearMessages } = useCodeAgent();
+  const {
+    inputValue,
+    showCommandPalette,
+    showFileSelector,
+    updateShowCommandPalette,
+    updateFileSelectorPath,
+    resetFileSelector,
+    updateInputValue,
+    updateInputValueAndResetCursor,
+  } = useSelectorStore([
+    'inputValue',
+    'showCommandPalette',
+    'showFileSelector',
+    'updateShowCommandPalette',
+    'updateFileSelectorPath',
+    'resetFileSelector',
+    'updateInputValue',
+    'updateInputValueAndResetCursor',
+  ]);
   const safeWidth = useSafeWidth();
 
   useInput(
     (input, key) => {
       if (key.escape && showCommandPalette) {
         updateShowCommandPalette(false);
+      }
+
+      if (key.escape && showFileSelector) {
+        resetFileSelector();
       }
 
       if ((key.ctrl && input === 'c') || (key.ctrl && input === 'd')) {
@@ -48,50 +71,55 @@ export default function App({}: Props) {
     }
   };
 
-  // TODO: support every command
-  const handleCommand = (commandName: string) => {
-    switch (commandName) {
-      case '/help':
-        sendMessage(
-          'Help: Available commands are /help, /clear, /mcp, /model, /settings, /theme',
-        );
-        break;
-      case '/clear':
-        clearMessages();
-        break;
-      case '/mcp':
-        sendMessage('MCP Tools: Read, Write, Edit, Bash, Grep, Glob');
-        break;
-      case '/model':
-        sendMessage('Available models: gpt-4, claude-3-opus, claude-3-sonnet');
-        break;
-      case '/settings':
-        sendMessage(
-          'Settings: [Theme: ' +
-            themeMode +
-            ', Model: gpt-4, Temperature: 0.7]',
-        );
-        break;
-      case '/theme':
-        toggleTheme();
-        break;
-    }
-    updateInputValue('');
-    updateShowCommandPalette(false);
-  };
-
   const handleCommandSelect = (command: Command) => {
-    handleCommand(command.name);
+    {
+      switch (command.name) {
+        case '/help':
+          sendMessage(
+            'Help: Available commands are /help, /clear, /mcp, /model, /settings, /theme',
+          );
+          break;
+        case '/clear':
+          clearMessages();
+          break;
+        case '/mcp':
+          sendMessage('MCP Tools: Read, Write, Edit, Bash, Grep, Glob');
+          break;
+        case '/model':
+          sendMessage(
+            'Available models: gpt-4, claude-3-opus, claude-3-sonnet',
+          );
+          break;
+        case '/settings':
+          sendMessage(
+            'Settings: [Theme: ' +
+              themeMode +
+              ', Model: gpt-4, Temperature: 0.7]',
+          );
+          break;
+        case '/theme':
+          toggleTheme();
+          break;
+      }
+      updateInputValue('');
+      updateShowCommandPalette(false);
+    }
   };
 
-  useInput(
-    (input) => {
-      if (input === '/' && !isStreaming) {
-        updateShowCommandPalette(true);
-      }
-    },
-    { isActive: !showCommandPalette },
-  );
+  const handleFileSelect = (item: FileOption) => {
+    if (item.type === 'directory') {
+      const dirPath = item.value.endsWith('/')
+        ? item.value.slice(0, -1)
+        : item.value;
+      updateFileSelectorPath(dirPath);
+      const newValue = inputValue.replace(/@[^\s]*$/, `@${dirPath}/`);
+      updateInputValueAndResetCursor(newValue);
+    } else {
+      const newValue = inputValue.replace(/@[^\s]*$/, `@${item.value} `);
+      updateInputValueAndResetCursor(newValue);
+      resetFileSelector();
+    }
+  };
 
   return (
     <Box
@@ -108,15 +136,16 @@ export default function App({}: Props) {
         colors={colors}
         onSubmit={handleInputSubmit}
         disabled={isStreaming}
-        availableFiles={AVAILABLE_FILES}
       />
       {showCommandPalette && (
         <CommandPalette
           commands={AVAILABLE_COMMANDS}
           colors={colors}
           onSelect={handleCommandSelect}
-          onCancel={() => updateShowCommandPalette(false)}
         />
+      )}
+      {showFileSelector && (
+        <FileSelector colors={colors} onSelect={handleFileSelect} />
       )}
     </Box>
   );

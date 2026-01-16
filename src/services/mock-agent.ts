@@ -128,12 +128,3 @@ export const AVAILABLE_COMMANDS = [
   { name: '/settings', description: 'Open settings' },
   { name: '/theme', description: 'Toggle theme' },
 ];
-
-export const AVAILABLE_FILES = [
-  { path: 'src/app.tsx', name: 'app.tsx' },
-  { path: 'src/cli.tsx', name: 'cli.tsx' },
-  { path: 'package.json', name: 'package.json' },
-  { path: 'src/types.ts', name: 'types.ts' },
-  { path: 'src/hooks/useTheme.tsx', name: 'useTheme.tsx' },
-  { path: 'src/hooks/useChat.tsx', name: 'useChat.tsx' },
-];

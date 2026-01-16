@@ -1,27 +1,42 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
-import SelectInput from 'ink-select-input';
-import type { ThemeColors, FileItem } from '@/types';
-import useCodeStore from '@/stores';
+import type { ThemeColors } from '@/types';
+import useSelectorStore from '@/stores';
 import Spinner from 'ink-spinner';
+import fs from 'fs';
+import path from 'path';
 
 interface InputBoxProps {
   colors: ThemeColors;
   onSubmit: (value: string) => void;
   disabled?: boolean;
-  availableFiles: FileItem[];
 }
 
 export function InputBox({
   colors,
   onSubmit,
   disabled = false,
-  availableFiles,
 }: InputBoxProps) {
-  const { inputValue, updateInputValue } = useCodeStore();
-  const [showFileSelector, setShowFileSelector] = useState(false);
-  const { showCommandPalette, updateShowCommandPalette } = useCodeStore();
+  const {
+    inputValue,
+    updateInputValue,
+    inputKey,
+    showCommandPalette,
+    updateShowCommandPalette,
+    showFileSelector,
+    updateShowFileSelector,
+    updateFileSelectorPath,
+  } = useSelectorStore([
+    'inputValue',
+    'updateInputValue',
+    'inputKey',
+    'showCommandPalette',
+    'updateShowCommandPalette',
+    'showFileSelector',
+    'updateShowFileSelector',
+    'updateFileSelectorPath',
+  ]);
   const prevValueRef = useRef('');
 
   useEffect(() => {
@@ -32,7 +47,36 @@ export function InputBox({
     }
 
     prevValueRef.current = inputValue;
-  }, [inputValue, showCommandPalette, updateShowCommandPalette]);
+  }, [
+    inputValue,
+    showCommandPalette,
+    updateShowCommandPalette,
+    showFileSelector,
+    updateShowFileSelector,
+  ]);
+
+  useEffect(() => {
+    if (!showFileSelector) return;
+
+    const match = inputValue.match(/@([^\s]*)$/);
+    if (match) {
+      const inputPath = match[1];
+      if (inputPath.endsWith('/')) {
+        const dirPath = inputPath.slice(0, -1);
+        const fullPath = path.join(process.cwd(), dirPath);
+        if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
+          updateFileSelectorPath(dirPath);
+        }
+      }
+    }
+  }, [inputValue, showFileSelector, updateFileSelectorPath]);
+
+  useEffect(() => {
+    if (inputValue === '/') {
+      updateShowCommandPalette(true);
+      return;
+    }
+  }, [inputValue, updateShowCommandPalette, updateShowFileSelector]);
 
   useInput(
     (input, key) => {
@@ -52,53 +96,11 @@ export function InputBox({
       }
 
       if (input === '@' || (key.shift && input === '2')) {
-        setShowFileSelector(true);
+        updateShowFileSelector(true);
       }
     },
     { isActive: !showFileSelector },
   );
-
-  const handleFileSelect = (item: { value: FileItem }) => {
-    const file = item.value;
-    updateInputValue(inputValue + file.path + ' ');
-    setShowFileSelector(false);
-  };
-
-  if (showFileSelector) {
-    const items = availableFiles.map((file) => ({
-      label: file.path,
-      value: file,
-      key: file.path,
-    }));
-
-    return (
-      <Box
-        borderStyle="round"
-        borderColor={colors.secondary}
-        paddingX={1}
-        flexDirection="column"
-      >
-        <Box marginBottom={1}>
-          <Text bold color={colors.primary}>
-            Select a file (ESC to cancel)
-          </Text>
-        </Box>
-        <SelectInput
-          items={items}
-          onSelect={handleFileSelect}
-          itemComponent={({ isSelected, label }) => (
-            <Box>
-              <Text color={isSelected ? colors.primary : colors.text}>
-                {isSelected ? '❯ ' : '  '}📄 {label}
-              </Text>
-            </Box>
-          )}
-          indicatorComponent={() => null}
-          onHighlight={() => {}}
-        />
-      </Box>
-    );
-  }
 
   return (
     <Box
@@ -112,6 +114,7 @@ export function InputBox({
           ❯{' '}
         </Text>
         <TextInput
+          key={inputKey}
           value={inputValue}
           onChange={updateInputValue}
           placeholder="Type a message... (@ for files, / for commands)"

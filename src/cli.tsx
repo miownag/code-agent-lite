@@ -6,14 +6,7 @@ import App from '@/app.js';
 const cli = meow(
   `
 	Usage
-	  $ code-agent-lite
-
-	Options
-		--name  Your name
-
-	Examples
-	  $ code-agent-lite --name=Jane
-	  Hello, Jane
+	  $ code-lite
 `,
   {
     importMeta: import.meta,
