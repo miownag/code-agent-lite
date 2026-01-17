@@ -4,6 +4,7 @@ import type { ToolCall, ThemeColors } from '../types';
 import AlignedCombinedEmoji from './aligned-emoji';
 import { useTerminalSize } from '@/hooks/use-safe-width';
 import useSelectorStore from '@/stores';
+import { TOOLS_ICON } from '@/constants';
 
 interface ToolCallViewProps {
   toolCall: ToolCall;
@@ -100,7 +101,7 @@ export function ToolCallView({
       borderLeft={false}
       borderRight={false}
       paddingX={1}
-      marginY={1}
+      marginTop={1}
       width={boxWidth}
     >
       <Box flexWrap="nowrap" overflow="hidden" width={innerContentWidth}>
@@ -111,7 +112,7 @@ export function ToolCallView({
         )}
         {toolCall.status === 'running' && <Text> </Text>}
         <AlignedCombinedEmoji
-          emoji={toolCall.icon || '🔧'}
+          emoji={TOOLS_ICON[toolCall.name as keyof typeof TOOLS_ICON] ?? '🔧'}
           text={toolCall.name}
           shimmer={toolCall.status === 'running'}
         />
@@ -141,7 +142,9 @@ export function ToolCallView({
       {showOutput && !isCollapsed && (
         <Box marginTop={0} width={innerContentWidth}>
           <Box flexShrink={0}>
-            <Text>↳ </Text>
+            <Text color={colors.muted} dimColor>
+              ↳{' '}
+            </Text>
           </Box>
           <Box
             flexDirection="column"

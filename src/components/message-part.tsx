@@ -1,4 +1,4 @@
-import { Text } from 'ink';
+import { Box, Text } from 'ink';
 import type { MessagePart, ThemeColors } from '@/types';
 import { ToolCallView } from '@/components/tool-call-view';
 
@@ -19,10 +19,12 @@ export function MessagePartView({
 }: MessagePartViewProps) {
   if (part.type === 'text') {
     return (
-      <Text color={colors.text}>
-        {part.content}
-        {isLastPart && isStreaming && <Text color={colors.primary}>▋</Text>}
-      </Text>
+      <Box marginTop={1}>
+        <Text color={colors.text}>
+          {part.content}
+          {isLastPart && isStreaming && <Text color={colors.primary}>▋</Text>}
+        </Text>
+      </Box>
     );
   }
 

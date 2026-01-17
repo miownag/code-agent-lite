@@ -46,12 +46,12 @@ function ChatHistory({ messages, colors, width }: ChatHistoryProps) {
     <Box flexDirection="column" paddingX={1} width={width}>
       {messages.map((message, index) => (
         <Box key={message.id} flexDirection="column" marginBottom={1}>
-          <Box gap={1} marginBottom={1}>
+          <Box gap={1}>
             <Text
               bold
               color={message.role === 'user' ? colors.user : colors.assistant}
             >
-              {message.role === 'user' ? '🧑' : '🤖'}
+              ❯
             </Text>
             <Text
               color={message.role === 'user' ? colors.user : colors.assistant}
@@ -64,7 +64,7 @@ function ChatHistory({ messages, colors, width }: ChatHistoryProps) {
             {message.role === 'assistant' &&
             index === messages.length - 1 &&
             !message.hasFirstChunk ? (
-              <Box>
+              <Box marginTop={1}>
                 <TypeWriter text=". . ." textBold loop />
               </Box>
             ) : (
