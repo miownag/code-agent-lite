@@ -21,23 +21,40 @@ export default function FileSelector({ colors, onSelect }: FileSelectorProps) {
     ]);
   const fileOptions = useFilesOptions({ currentPath: fileSelectorPath });
 
-  // 构建选项列表
+  const searchQuery = useMemo(() => {
+    const match = inputValue.match(/@([^\s]*)$/);
+    if (!match) return '';
+    const fullPath = match[1];
+    const lastSlashIndex = fullPath.lastIndexOf('/');
+    const query =
+      lastSlashIndex >= 0 ? fullPath.slice(lastSlashIndex + 1) : fullPath;
+    return query.toLowerCase();
+  }, [inputValue]);
+
+  const filteredOptions = useMemo(() => {
+    if (!searchQuery) return fileOptions;
+    return fileOptions.filter((option) => {
+      const fileName = option.label.toLowerCase().replace(/\/$/, '');
+      return fileName.startsWith(searchQuery);
+    });
+  }, [fileOptions, searchQuery]);
+
   const items = useMemo(() => {
-    return fileOptions.map((i) => ({
+    return filteredOptions.map((i) => ({
       label: i.label,
       value: JSON.stringify({ value: i.value, type: i.type }),
     }));
-  }, [fileOptions]);
+  }, [filteredOptions]);
 
   useEffect(() => {
     if (
       inputValue.endsWith('@') &&
       !inputValue.endsWith('@@') &&
-      fileOptions.length
+      filteredOptions.length
     ) {
       updateShowFileSelector(true);
     }
-  }, [inputValue, fileOptions.length, updateShowFileSelector]);
+  }, [inputValue, filteredOptions.length, updateShowFileSelector]);
 
   const handleSelect = (item: { label: string; value: string }) => {
     const parsed = JSON.parse(item.value) as {
