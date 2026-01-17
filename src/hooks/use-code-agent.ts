@@ -9,7 +9,7 @@ function getTextContent(parts: MessagePart[]): string {
     .join('');
 }
 
-export function useCodeAgent() {
+export default function useCodeAgent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const messagesRef = useRef<Message[]>([]);

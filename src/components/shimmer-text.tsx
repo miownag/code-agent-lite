@@ -1,4 +1,4 @@
-import { useTheme } from '@/hooks/use-theme';
+import useTheme from '@/hooks/use-theme';
 import { Text } from 'ink';
 import { useEffect, useState } from 'react';
 
@@ -6,11 +6,13 @@ interface ShimmerTextProps {
   children: string;
   colors?: string[];
   speed?: number;
+  bold?: boolean;
 }
 
 export function ShimmerText({
   children,
   colors,
+  bold = false,
   speed = 100,
 }: ShimmerTextProps) {
   const [colorIndex, setColorIndex] = useState(0);
@@ -27,5 +29,9 @@ export function ShimmerText({
     };
   }, [finalColors.length, speed]);
 
-  return <Text color={finalColors[colorIndex]}>{children}</Text>;
+  return (
+    <Text color={finalColors[colorIndex]} bold={bold}>
+      {children}
+    </Text>
+  );
 }

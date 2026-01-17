@@ -1,15 +1,15 @@
 import { Box, Text } from 'ink';
 import type { Message, ThemeColors } from '@/types';
 import { MessagePartView } from '@/components/message-part';
-import Spinner from 'ink-spinner';
-import { ShimmerText } from './shimmer-text';
+import TypeWriter from './type-writer';
 
 interface ChatHistoryProps {
   messages: Message[];
   colors: ThemeColors;
+  width?: number;
 }
 
-export function ChatHistory({ messages, colors }: ChatHistoryProps) {
+function ChatHistory({ messages, colors, width }: ChatHistoryProps) {
   if (messages.length === 0) {
     return (
       <Box
@@ -18,6 +18,7 @@ export function ChatHistory({ messages, colors }: ChatHistoryProps) {
         paddingY={1}
         justifyContent="center"
         alignItems="center"
+        width={width}
       >
         <Text color={colors.muted}>No messages yet. Start chatting!</Text>
         <Text color={colors.muted} dimColor>
@@ -27,8 +28,22 @@ export function ChatHistory({ messages, colors }: ChatHistoryProps) {
     );
   }
 
+  // Find the latest tool call across all messages
+  let latestToolCallId: string | null = null;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    for (let j = message.parts.length - 1; j >= 0; j--) {
+      const part = message.parts[j];
+      if (part.type === 'tool_call') {
+        latestToolCallId = part.toolCall.id;
+        break;
+      }
+    }
+    if (latestToolCallId) break;
+  }
+
   return (
-    <Box flexDirection="column" paddingX={1}>
+    <Box flexDirection="column" paddingX={1} width={width}>
       {messages.map((message, index) => (
         <Box key={message.id} flexDirection="column" marginBottom={1}>
           <Box gap={1} marginBottom={1}>
@@ -50,8 +65,7 @@ export function ChatHistory({ messages, colors }: ChatHistoryProps) {
             index === messages.length - 1 &&
             !message.hasFirstChunk ? (
               <Box>
-                <Spinner type="star" />
-                <ShimmerText> Loading...</ShimmerText>
+                <TypeWriter text=". . ." textBold loop />
               </Box>
             ) : (
               message.parts.map((part, partIndex) => (
@@ -61,6 +75,10 @@ export function ChatHistory({ messages, colors }: ChatHistoryProps) {
                   colors={colors}
                   isLastPart={partIndex === message.parts.length - 1}
                   isStreaming={message.isStreaming}
+                  isLatestToolCall={
+                    part.type === 'tool_call' &&
+                    part.toolCall.id === latestToolCallId
+                  }
                 />
               ))
             )}
@@ -70,3 +88,5 @@ export function ChatHistory({ messages, colors }: ChatHistoryProps) {
     </Box>
   );
 }
+
+export default ChatHistory;

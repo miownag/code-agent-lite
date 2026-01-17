@@ -4,13 +4,15 @@ import type { ThemeColors } from '@/types';
 import useFilesOptions, { FileOption } from '@/hooks/use-files-options';
 import useSelectorStore from '@/stores';
 import { useEffect, useMemo } from 'react';
+import useSafeWidth from '@/hooks/use-safe-width';
 
 interface FileSelectorProps {
   colors: ThemeColors;
   onSelect: (file: FileOption) => void;
 }
 
-export function FileSelector({ colors, onSelect }: FileSelectorProps) {
+export default function FileSelector({ colors, onSelect }: FileSelectorProps) {
+  const safeWidth = useSafeWidth(2);
   const { fileSelectorPath, updateShowFileSelector, inputValue } =
     useSelectorStore([
       'fileSelectorPath',
@@ -55,6 +57,7 @@ export function FileSelector({ colors, onSelect }: FileSelectorProps) {
       borderColor={colors.secondary}
       paddingX={1}
       flexDirection="column"
+      width={safeWidth}
     >
       <Box marginBottom={1} gap={1}>
         <Text bold color={colors.secondary}>

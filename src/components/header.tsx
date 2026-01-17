@@ -1,5 +1,11 @@
 import { Box, Text } from 'ink';
 import type { ThemeColors, ThemeMode } from '@/types';
+import BigGradientText from './big-gradient-text';
+import { useTerminalSize } from '@/hooks/use-safe-width';
+
+// Breakpoints for responsive layout
+const COMPACT_WIDTH = 80;
+const MINIMAL_WIDTH = 60;
 
 interface HeaderProps {
   colors: ThemeColors;
@@ -7,7 +13,13 @@ interface HeaderProps {
   model?: string;
 }
 
-export function Header({ colors, mode, model = 'gpt-4' }: HeaderProps) {
+export default function Header({ colors, mode, model = 'gpt-4' }: HeaderProps) {
+  const { width } = useTerminalSize({ reservedWidth: 2 });
+
+  // Determine layout mode based on terminal width
+  const isCompact = width < COMPACT_WIDTH;
+  const isMinimal = width < MINIMAL_WIDTH;
+
   return (
     <Box
       borderStyle="double"
@@ -15,30 +27,33 @@ export function Header({ colors, mode, model = 'gpt-4' }: HeaderProps) {
       paddingX={1}
       flexDirection="row"
       justifyContent="space-between"
+      alignItems="center"
+      width={width}
     >
-      <Box
-        flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        gap={1}
-      >
-        <Text bold color={colors.primary}>
-          ⚡️ Code Agent Lite ⚡️
-        </Text>
-        <Text color={colors.muted}>
-          Version: <Text color={colors.text}>0.1.0</Text>
-        </Text>
-      </Box>
-      <Box gap={2} height="100%" alignItems="center">
-        <Text color={colors.muted}>
-          Model: <Text color={colors.text}>{model}</Text>
-        </Text>
-        <Text color={colors.muted}>
-          Theme:{' '}
-          <Text color={colors.text}>
-            {mode.charAt(0).toUpperCase() + mode.slice(1)}
+      <BigGradientText
+        text={isMinimal ? 'CAL' : 'Code Agent Lite'}
+        lineHeight={1}
+        font="tiny"
+        colors={colors.gradient}
+      />
+      <Box gap={isCompact ? 1 : 2} height="100%" alignItems="center">
+        {!isMinimal && (
+          <Text color={colors.muted}>
+            Version: <Text color={colors.text}>0.1.0</Text>
           </Text>
+        )}
+        <Text color={colors.muted}>
+          {isCompact ? '' : 'Model: '}
+          <Text color={colors.text}>{model}</Text>
         </Text>
+        {!isCompact && (
+          <Text color={colors.muted}>
+            Theme:{' '}
+            <Text color={colors.text}>
+              {mode.charAt(0).toUpperCase() + mode.slice(1)}
+            </Text>
+          </Text>
+        )}
       </Box>
     </Box>
   );

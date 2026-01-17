@@ -2,14 +2,29 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import * as Diff from 'diff';
 import type { DiffData, ThemeColors } from '@/types';
+import useSafeWidth from '@/hooks/use-safe-width';
 
 interface DiffViewProps {
   diff: DiffData;
   colors: ThemeColors;
 }
 
+// Truncate text to fit within max width
+const truncateLine = (text: string, maxWidth: number): string => {
+  if (text.length <= maxWidth) return text;
+  return text.slice(0, maxWidth - 3) + '...';
+};
+
 export function DiffView({ diff, colors }: DiffViewProps) {
+  const safeWidth = useSafeWidth(4); // Reserve 4 chars for borders/padding
   const changes = Diff.diffLines(diff.oldContent, diff.newContent);
+
+  // Calculate widths for side-by-side view
+  // Total width minus divider space, split between two sides
+  const totalWidth = safeWidth ?? 80;
+  const halfWidth = Math.floor((totalWidth - 2) / 2); // -2 for borders
+  // Line number takes 4 chars (3 digits + 1 space), prefix takes 2 chars
+  const contentWidth = halfWidth - 6;
 
   const renderSideBySide = () => {
     const oldLines: Array<{ lineNum: number; content: string; type: string }> =
@@ -66,9 +81,9 @@ export function DiffView({ diff, colors }: DiffViewProps) {
 
       rows.push(
         <Box key={i}>
-          <Box width="50%">
+          <Box width={halfWidth} overflow="hidden">
             {oldLine ? (
-              <Box gap={1}>
+              <Box gap={1} flexWrap="nowrap">
                 <Text color={colors.muted} dimColor>
                   {oldLine.lineNum.toString().padStart(3)}
                 </Text>
@@ -79,18 +94,19 @@ export function DiffView({ diff, colors }: DiffViewProps) {
                   backgroundColor={
                     oldLine.type === 'removed' ? '#3D0000' : undefined
                   }
+                  wrap="truncate"
                 >
                   {oldLine.type === 'removed' ? '- ' : '  '}
-                  {oldLine.content}
+                  {truncateLine(oldLine.content, contentWidth)}
                 </Text>
               </Box>
             ) : (
               <Text> </Text>
             )}
           </Box>
-          <Box width="50%">
+          <Box width={halfWidth} overflow="hidden">
             {newLine ? (
-              <Box gap={1}>
+              <Box gap={1} flexWrap="nowrap">
                 <Text color={colors.muted} dimColor>
                   {newLine.lineNum.toString().padStart(3)}
                 </Text>
@@ -101,9 +117,10 @@ export function DiffView({ diff, colors }: DiffViewProps) {
                   backgroundColor={
                     newLine.type === 'added' ? '#003D00' : undefined
                   }
+                  wrap="truncate"
                 >
                   {newLine.type === 'added' ? '+ ' : '  '}
-                  {newLine.content}
+                  {truncateLine(newLine.content, contentWidth)}
                 </Text>
               </Box>
             ) : (
@@ -125,19 +142,20 @@ export function DiffView({ diff, colors }: DiffViewProps) {
       paddingX={1}
       marginY={0}
       paddingBottom={1}
+      width={totalWidth}
     >
-      <Box>
-        <Text bold color={colors.primary}>
-          📝 {diff.filePath}
+      <Box overflow="hidden">
+        <Text bold color={colors.primary} wrap="truncate">
+          📝 {truncateLine(diff.filePath, totalWidth - 6)}
         </Text>
       </Box>
       <Box marginTop={1} marginBottom={1}>
-        <Box width="50%" paddingLeft={1}>
+        <Box width={halfWidth} paddingLeft={1}>
           <Text bold color={colors.error}>
             Before
           </Text>
         </Box>
-        <Box width="50%" paddingLeft={1}>
+        <Box width={halfWidth} paddingLeft={1}>
           <Text bold color={colors.success}>
             After
           </Text>

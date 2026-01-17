@@ -1,45 +1,67 @@
 import { Box, useApp, useInput } from 'ink';
-import { useTheme } from '@/hooks/use-theme';
-import { useCodeAgent } from '@/hooks/use-code-agent';
-import { Header } from '@/components/header';
-import { ChatHistory } from '@/components/chat-history.js';
-import { InputBox } from '@/components/input-box';
-import { CommandPalette } from '@/components/command-palette';
+import { useCallback, useRef, useState } from 'react';
+import useTheme from '@/hooks/use-theme';
+import useCodeAgent from '@/hooks/use-code-agent';
+import Header from '@/components/header';
+import ChatHistory from '@/components/chat-history.js';
+import InputBox from '@/components/input-box';
+import CommandPalette from '@/components/command-palette';
+import FileSelector from '@/components/file-selector';
 import { AVAILABLE_COMMANDS } from '@/services/mock-agent';
 import type { Command } from '@/types';
-import useSafeWidth from '@/hooks/use-safe-width';
 import useSelectorStore from '@/stores';
-import { FileSelector } from './components/file-selector';
-import { FileOption } from './hooks/use-files-options';
+import { FileOption } from '@/hooks/use-files-options';
+import useResize from '@/hooks/use-resize';
+import useResponsiveWidth from '@/hooks/use-main-width';
 
-type Props = {
-  mode?: string;
-};
-
-export default function App({}: Props) {
+export default function App() {
   const { exit } = useApp();
   const { colors, mode: themeMode, toggleTheme } = useTheme();
   const { messages, isStreaming, sendMessage, clearMessages } = useCodeAgent();
   const {
+    showInterface,
     inputValue,
     showCommandPalette,
     showFileSelector,
+    updateShowInterface,
     updateShowCommandPalette,
     updateFileSelectorPath,
     resetFileSelector,
     updateInputValue,
     updateInputValueAndResetCursor,
+    toggleLatestToolCallCollapsed,
   } = useSelectorStore([
+    'showInterface',
     'inputValue',
     'showCommandPalette',
     'showFileSelector',
+    'updateShowInterface',
     'updateShowCommandPalette',
     'updateFileSelectorPath',
     'resetFileSelector',
     'updateInputValue',
     'updateInputValueAndResetCursor',
+    'toggleLatestToolCallCollapsed',
   ]);
-  const safeWidth = useSafeWidth();
+  const responsiveWidth = useResponsiveWidth();
+  const [showHeader, setShowHeader] = useState(true);
+  const showTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const handleResize = useCallback(() => {
+    setShowHeader(false);
+
+    if (showInterface) {
+      updateShowInterface(false);
+      if (showTimer.current) {
+        clearTimeout(showTimer.current);
+      }
+      showTimer.current = setTimeout(() => {
+        updateShowInterface(true);
+      }, 1000);
+    }
+  }, [showInterface, updateShowInterface]);
+
+  useResize(handleResize);
 
   useInput(
     (input, key) => {
@@ -53,6 +75,11 @@ export default function App({}: Props) {
 
       if ((key.ctrl && input === 'c') || (key.ctrl && input === 'd')) {
         exit();
+      }
+
+      // Ctrl/Cmd + H to toggle tool calls collapse
+      if (key.ctrl && input === 'h') {
+        toggleLatestToolCallCollapsed();
       }
     },
     { isActive: true },
@@ -122,31 +149,34 @@ export default function App({}: Props) {
   };
 
   return (
-    <Box
-      flexDirection="column"
-      height="100%"
-      width={safeWidth || '99%'}
-      gap={1}
-    >
-      <Header colors={colors} mode={themeMode} model="GPT-5.2" />
-      <Box flexGrow={1} flexDirection="column" overflowY="hidden">
-        <ChatHistory messages={messages} colors={colors} />
-      </Box>
-      <InputBox
-        colors={colors}
-        onSubmit={handleInputSubmit}
-        disabled={isStreaming}
-      />
-      {showCommandPalette && (
-        <CommandPalette
-          commands={AVAILABLE_COMMANDS}
+    showInterface && (
+      <Box flexDirection="column" width={responsiveWidth} gap={1}>
+        {showHeader && (
+          <Header colors={colors} mode={themeMode} model="GPT-5.2" />
+        )}
+        <Box flexGrow={1} flexDirection="column">
+          <ChatHistory
+            messages={messages}
+            colors={colors}
+            width={responsiveWidth - 2}
+          />
+        </Box>
+        <InputBox
           colors={colors}
-          onSelect={handleCommandSelect}
+          onSubmit={handleInputSubmit}
+          disabled={isStreaming}
         />
-      )}
-      {showFileSelector && (
-        <FileSelector colors={colors} onSelect={handleFileSelect} />
-      )}
-    </Box>
+        {showCommandPalette && (
+          <CommandPalette
+            commands={AVAILABLE_COMMANDS}
+            colors={colors}
+            onSelect={handleCommandSelect}
+          />
+        )}
+        {showFileSelector && (
+          <FileSelector colors={colors} onSelect={handleFileSelect} />
+        )}
+      </Box>
+    )
   );
 }

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { ThemeMode, ThemeColors } from '@/types';
 
-export function useTheme() {
+export default function useTheme() {
   const [mode, setMode] = useState<ThemeMode>('dark');
 
   const colors: ThemeColors = useMemo(() => {
@@ -28,6 +28,14 @@ export function useTheme() {
           '#9CA3AF',
           '#6B7280',
         ],
+        gradient: [
+          '#2598fd',
+          '#25fddd',
+          '#00FF41',
+          '#66cc00',
+          '#8c9900',
+          '#b35100',
+        ],
       };
     } else {
       return {
@@ -43,14 +51,22 @@ export function useTheme() {
         warning: '#9A6700',
         muted: '#656D76',
         shimmer: [
-          '#93C5FD',
-          '#BFDBFE',
-          '#DBEAFE',
-          '#EFF6FF',
-          '#FFFFFF',
-          '#EFF6FF',
-          '#DBEAFE',
-          '#BFDBFE',
+          '#2e3b4a',
+          '#353d46',
+          '#3c4045',
+          '#515356',
+          '#464646',
+          '#4e5053',
+          '#42464d',
+          '#38424d',
+        ],
+        gradient: [
+          '#0a3c68',
+          '#076c5d',
+          '#086c21',
+          '#305d04',
+          '#586003',
+          '#502503',
         ],
       };
     }

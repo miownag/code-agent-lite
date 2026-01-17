@@ -6,6 +6,7 @@ import useSelectorStore from '@/stores';
 import Spinner from 'ink-spinner';
 import fs from 'fs';
 import path from 'path';
+import useSafeWidth from '@/hooks/use-safe-width';
 
 interface InputBoxProps {
   colors: ThemeColors;
@@ -13,11 +14,12 @@ interface InputBoxProps {
   disabled?: boolean;
 }
 
-export function InputBox({
+export default function InputBox({
   colors,
   onSubmit,
   disabled = false,
 }: InputBoxProps) {
+  const safeWidth = useSafeWidth(2); // Reserve 2 chars for borders
   const {
     inputValue,
     updateInputValue,
@@ -27,6 +29,7 @@ export function InputBox({
     showFileSelector,
     updateShowFileSelector,
     updateFileSelectorPath,
+    resetFileSelector,
   } = useSelectorStore([
     'inputValue',
     'updateInputValue',
@@ -36,6 +39,7 @@ export function InputBox({
     'showFileSelector',
     'updateShowFileSelector',
     'updateFileSelectorPath',
+    'resetFileSelector',
   ]);
   const prevValueRef = useRef('');
 
@@ -47,13 +51,7 @@ export function InputBox({
     }
 
     prevValueRef.current = inputValue;
-  }, [
-    inputValue,
-    showCommandPalette,
-    updateShowCommandPalette,
-    showFileSelector,
-    updateShowFileSelector,
-  ]);
+  }, [inputValue, showCommandPalette, updateShowCommandPalette]);
 
   useEffect(() => {
     if (!showFileSelector) return;
@@ -68,15 +66,17 @@ export function InputBox({
           updateFileSelectorPath(dirPath);
         }
       }
+    } else if (!inputValue.includes('@')) {
+      resetFileSelector();
     }
-  }, [inputValue, showFileSelector, updateFileSelectorPath]);
+  }, [inputValue, showFileSelector, resetFileSelector, updateFileSelectorPath]);
 
   useEffect(() => {
     if (inputValue === '/') {
       updateShowCommandPalette(true);
       return;
     }
-  }, [inputValue, updateShowCommandPalette, updateShowFileSelector]);
+  }, [inputValue, updateShowCommandPalette]);
 
   useInput(
     (input, key) => {
@@ -96,6 +96,7 @@ export function InputBox({
       }
 
       if (input === '@' || (key.shift && input === '2')) {
+        updateInputValue(`${inputValue}@`);
         updateShowFileSelector(true);
       }
     },
@@ -108,8 +109,9 @@ export function InputBox({
       borderColor={colors.border}
       paddingX={1}
       flexDirection="column"
+      width={safeWidth}
     >
-      <Box marginBottom={1}>
+      <Box marginBottom={1} overflow="hidden">
         <Text color={colors.primary} bold>
           ❯{' '}
         </Text>

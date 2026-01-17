@@ -7,6 +7,7 @@ interface MessagePartViewProps {
   colors: ThemeColors;
   isLastPart?: boolean;
   isStreaming?: boolean;
+  isLatestToolCall?: boolean;
 }
 
 export function MessagePartView({
@@ -14,6 +15,7 @@ export function MessagePartView({
   colors,
   isLastPart,
   isStreaming,
+  isLatestToolCall,
 }: MessagePartViewProps) {
   if (part.type === 'text') {
     return (
@@ -25,7 +27,13 @@ export function MessagePartView({
   }
 
   if (part.type === 'tool_call') {
-    return <ToolCallView toolCall={part.toolCall} colors={colors} />;
+    return (
+      <ToolCallView
+        toolCall={part.toolCall}
+        colors={colors}
+        isLatest={isLatestToolCall}
+      />
+    );
   }
 
   return null;

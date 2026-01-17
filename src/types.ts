@@ -52,6 +52,7 @@ export interface ThemeColors {
   warning: string;
   muted: string;
   shimmer: string[];
+  gradient: string[];
 }
 
 export interface FileItem {

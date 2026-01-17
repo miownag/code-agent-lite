@@ -1,6 +1,7 @@
 import { Box, Text } from 'ink';
 import SelectInput from 'ink-select-input';
 import type { Command, ThemeColors } from '@/types';
+import useSafeWidth from '@/hooks/use-safe-width';
 
 interface CommandPaletteProps {
   commands: Command[];
@@ -8,11 +9,9 @@ interface CommandPaletteProps {
   onSelect: (command: Command) => void;
 }
 
-export function CommandPalette({
-  commands,
-  colors,
-  onSelect,
-}: CommandPaletteProps) {
+function CommandPalette({ commands, colors, onSelect }: CommandPaletteProps) {
+  const safeWidth = useSafeWidth(2);
+
   const items = commands.map((cmd) => ({
     label: `${cmd.icon || ''} ${cmd.name}`,
     value: cmd.name,
@@ -25,6 +24,7 @@ export function CommandPalette({
       borderColor={colors.primary}
       paddingX={1}
       flexDirection="column"
+      width={safeWidth}
     >
       <Box marginBottom={1}>
         <Text bold color={colors.primary}>
@@ -49,3 +49,5 @@ export function CommandPalette({
     </Box>
   );
 }
+
+export default CommandPalette;
