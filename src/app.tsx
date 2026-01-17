@@ -19,11 +19,9 @@ export default function App() {
   const { colors, mode: themeMode, toggleTheme } = useTheme();
   const { messages, isStreaming, sendMessage, clearMessages } = useCodeAgent();
   const {
-    showInterface,
     inputValue,
     showCommandPalette,
     showFileSelector,
-    updateShowInterface,
     updateShowCommandPalette,
     updateFileSelectorPath,
     resetFileSelector,
@@ -31,11 +29,9 @@ export default function App() {
     updateInputValueAndResetCursor,
     toggleLatestToolCallCollapsed,
   } = useSelectorStore([
-    'showInterface',
     'inputValue',
     'showCommandPalette',
     'showFileSelector',
-    'updateShowInterface',
     'updateShowCommandPalette',
     'updateFileSelectorPath',
     'resetFileSelector',
@@ -44,22 +40,6 @@ export default function App() {
     'toggleLatestToolCallCollapsed',
   ]);
   const responsiveWidth = useResponsiveWidth();
-  const [showHeader, setShowHeader] = useState(true);
-  const showTimer = useRef<NodeJS.Timeout | null>(null);
-
-  const handleResize = useCallback(() => {
-    setShowHeader(false);
-
-    if (showInterface) {
-      updateShowInterface(false);
-      if (showTimer.current) {
-        clearTimeout(showTimer.current);
-      }
-      showTimer.current = setTimeout(() => {
-        updateShowInterface(true);
-      }, 1000);
-    }
-  }, [showInterface, updateShowInterface]);
 
   const rows = useFullHeight();
 

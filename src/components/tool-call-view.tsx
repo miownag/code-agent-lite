@@ -159,7 +159,12 @@ export function ToolCallView({
             )
               .split('\n')
               .map((line, i) => (
-                <Text key={i} color={colors.muted} dimColor wrap="truncate">
+                <Text
+                  key={i}
+                  color={colors.muted}
+                  dimColor
+                  wrap="truncate-middle"
+                >
                   {line}
                 </Text>
               ))}

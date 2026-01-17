@@ -15,17 +15,14 @@ function CommandPalette({ commands, colors, onSelect }: CommandPaletteProps) {
   const safeWidth = useSafeWidth(2);
   const { inputValue } = useSelectorStore(['inputValue']);
 
-  // 从输入中提取搜索关键词（/后面的部分）
   const searchQuery = useMemo(() => {
     const match = inputValue.match(/\/(\S*)$/);
     return match ? match[1].toLowerCase() : '';
   }, [inputValue]);
 
-  // 根据搜索关键词筛选命令
   const filteredCommands = useMemo(() => {
     if (!searchQuery) return commands;
     return commands.filter((cmd) => {
-      // 去掉命令名前的 / 进行匹配
       const cmdName = cmd.name.replace(/^\//, '').toLowerCase();
       return cmdName.startsWith(searchQuery);
     });
@@ -40,20 +37,20 @@ function CommandPalette({ commands, colors, onSelect }: CommandPaletteProps) {
   return (
     <Box
       borderStyle="round"
-      borderColor={colors.primary}
+      borderColor={colors.secondary}
+      borderDimColor
       paddingX={1}
       flexDirection="column"
       width={safeWidth}
     >
-      <Box marginBottom={1} gap={1}>
-        <Text bold color={colors.primary}>
+      <Box marginBottom={1} gap={2}>
+        <Text bold color={colors.secondary}>
           Commands
         </Text>
-        {searchQuery && (
-          <Text color={colors.muted}>
-            filter: {searchQuery}
-          </Text>
-        )}
+        {searchQuery && <Text color={colors.muted}>🔍 {searchQuery}</Text>}
+        <Text color={colors.warning} dimColor>
+          Esc to close
+        </Text>
       </Box>
       <SelectInput
         items={items}

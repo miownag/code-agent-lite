@@ -3,7 +3,6 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
 
 type State = {
-  showInterface: boolean;
   inputValue: string;
   showCommandPalette: boolean;
   showFileSelector: boolean;
@@ -13,7 +12,6 @@ type State = {
 };
 
 type Action = {
-  updateShowInterface: (showInterface: State['showInterface']) => void;
   updateInputValue: (inputValue: State['inputValue']) => void;
   updateShowCommandPalette: (
     showCommandPalette: State['showCommandPalette'],
@@ -26,14 +24,12 @@ type Action = {
 };
 
 const useCodeStore = create<State & Action>((set) => ({
-  showInterface: true,
   inputValue: '',
   showCommandPalette: false,
   showFileSelector: false,
   fileSelectorPath: '',
   inputKey: 0,
   latestToolCallCollapsed: false,
-  updateShowInterface: (showInterface) => set({ showInterface }),
   updateInputValue: (inputValue) => set({ inputValue }),
   updateShowCommandPalette: (showCommandPalette) => set({ showCommandPalette }),
   updateShowFileSelector: (showFileSelector) => set({ showFileSelector }),

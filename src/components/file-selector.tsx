@@ -13,12 +13,17 @@ interface FileSelectorProps {
 
 export default function FileSelector({ colors, onSelect }: FileSelectorProps) {
   const safeWidth = useSafeWidth(2);
-  const { fileSelectorPath, updateShowFileSelector, inputValue } =
-    useSelectorStore([
-      'fileSelectorPath',
-      'updateShowFileSelector',
-      'inputValue',
-    ]);
+  const {
+    fileSelectorPath,
+    updateShowFileSelector,
+    inputValue,
+    showCommandPalette,
+  } = useSelectorStore([
+    'fileSelectorPath',
+    'updateShowFileSelector',
+    'inputValue',
+    'showCommandPalette',
+  ]);
   const fileOptions = useFilesOptions({ currentPath: fileSelectorPath });
 
   const searchQuery = useMemo(() => {
@@ -50,7 +55,8 @@ export default function FileSelector({ colors, onSelect }: FileSelectorProps) {
     if (
       inputValue.endsWith('@') &&
       !inputValue.endsWith('@@') &&
-      filteredOptions.length
+      filteredOptions.length &&
+      !showCommandPalette
     ) {
       updateShowFileSelector(true);
     }
@@ -72,15 +78,19 @@ export default function FileSelector({ colors, onSelect }: FileSelectorProps) {
     <Box
       borderStyle="round"
       borderColor={colors.secondary}
+      borderDimColor
       paddingX={1}
       flexDirection="column"
       width={safeWidth}
     >
-      <Box marginBottom={1} gap={1}>
+      <Box marginBottom={1} gap={2}>
         <Text bold color={colors.secondary}>
-          Select a file (ESC to cancel)
+          Select a file
         </Text>
         <Text color={colors.muted}>📂 {fileSelectorPath || '.'}</Text>
+        <Text color={colors.warning} dimColor>
+          Esc to close
+        </Text>
       </Box>
       <SelectInput
         items={items}

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import type { ThemeColors } from '@/types';
@@ -41,17 +41,6 @@ export default function InputBox({
     'updateFileSelectorPath',
     'resetFileSelector',
   ]);
-  const prevValueRef = useRef('');
-
-  useEffect(() => {
-    const prevValue = prevValueRef.current;
-
-    if (showCommandPalette && prevValue === '/' && inputValue !== '/') {
-      updateShowCommandPalette(false);
-    }
-
-    prevValueRef.current = inputValue;
-  }, [inputValue, showCommandPalette, updateShowCommandPalette]);
 
   useEffect(() => {
     if (!showFileSelector) return;
@@ -97,7 +86,7 @@ export default function InputBox({
 
       if (input === '@' || (key.shift && input === '2')) {
         updateInputValue(`${inputValue}@`);
-        updateShowFileSelector(true);
+        !showCommandPalette && updateShowFileSelector(true);
       }
     },
     { isActive: !showFileSelector },
