@@ -1,6 +1,6 @@
 {
   "name": "code-agent-lite",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "license": "MIT",
   "bin": {
     "code-lite": "dist/cli.js"
@@ -11,6 +11,7 @@
   },
   "scripts": {
     "build": "bun build src/cli.tsx --outfile dist/cli.js --target bun",
+    "build:mac": "bun build --compile --target=bun-darwin-x64 ./src/cli.tsx --outfile dist-mac/cli",
     "dev": "bun --watch src/cli.tsx",
     "test": "prettier --check . && xo && ava",
     "format": "prettier --write ."
@@ -21,8 +22,7 @@
   "dependencies": {
     "@langchain/core": "^1.1.15",
     "@langchain/openai": "^1.2.2",
-    "@langchain/tavily": "^1.2.0",
-    "deepagents": "^1.4.2",
+    "deepagents": "^1.5.0",
     "diff": "^8.0.3",
     "es-toolkit": "^1.44.0",
     "ink": "^4.1.0",
@@ -35,7 +35,6 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
-    "@sindresorhus/tsconfig": "^3.0.1",
     "@types/react": "^18.0.32",
     "ava": "^5.2.0",
     "chalk": "^5.2.0",
@@ -44,6 +43,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "ink-testing-library": "^3.0.0",
     "prettier": "^3.8.0",
+    "react-devtools-core": "^7.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.9.3",
     "xo": "^0.53.1"
