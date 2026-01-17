@@ -1,7 +1,8 @@
 import { Box, Text } from 'ink';
 import type { Message, ThemeColors } from '@/types';
 import { MessagePartView } from '@/components/message-part';
-import TypeWriter from './type-writer';
+import Spinner from 'ink-spinner';
+import { ShimmerText } from './shimmer-text';
 
 interface ChatHistoryProps {
   messages: Message[];
@@ -19,8 +20,10 @@ function ChatHistory({ messages, colors, width }: ChatHistoryProps) {
         justifyContent="center"
         alignItems="center"
         width={width}
+        height="100%"
       >
-        <Text color={colors.muted}>No messages yet. Start chatting!</Text>
+        <Text>No messages yet. Type to chat!</Text>
+        <Text> </Text>
         <Text color={colors.muted} dimColor>
           Try using /help for available commands
         </Text>
@@ -50,11 +53,13 @@ function ChatHistory({ messages, colors, width }: ChatHistoryProps) {
             <Text
               bold
               color={message.role === 'user' ? colors.user : colors.assistant}
+              dimColor={message.role === 'user'}
             >
               ❯
             </Text>
             <Text
               color={message.role === 'user' ? colors.user : colors.assistant}
+              dimColor={message.role === 'user'}
               bold
             >
               {message.role === 'user' ? 'You' : 'Agent'}
@@ -65,11 +70,12 @@ function ChatHistory({ messages, colors, width }: ChatHistoryProps) {
             index === messages.length - 1 &&
             !message.hasFirstChunk ? (
               <Box marginTop={1}>
-                <TypeWriter text=". . ." textBold loop />
+                <ShimmerText bold={true}>Loading...</ShimmerText>
               </Box>
             ) : (
               message.parts.map((part, partIndex) => (
                 <MessagePartView
+                  role={message.role}
                   key={partIndex}
                   part={part}
                   colors={colors}

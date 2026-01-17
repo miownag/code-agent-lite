@@ -122,7 +122,7 @@ export default function InputBox({
           placeholder="Type a message... (@ for files, / for commands)"
         />
       </Box>
-      <Box justifyContent="space-between" marginTop={0}>
+      <Box justifyContent="space-between" marginTop={1}>
         <Text color={colors.muted} dimColor>
           Press `Enter` to send
         </Text>

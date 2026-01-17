@@ -11,8 +11,8 @@ import { AVAILABLE_COMMANDS } from '@/services/mock-agent';
 import type { Command } from '@/types';
 import useSelectorStore from '@/stores';
 import { FileOption } from '@/hooks/use-files-options';
-import useResize from '@/hooks/use-resize';
 import useResponsiveWidth from '@/hooks/use-main-width';
+import useFullHeight from '@/hooks/use-full-height';
 
 export default function App() {
   const { exit } = useApp();
@@ -61,7 +61,7 @@ export default function App() {
     }
   }, [showInterface, updateShowInterface]);
 
-  useResize(handleResize);
+  const rows = useFullHeight();
 
   useInput(
     (input, key) => {
@@ -149,34 +149,30 @@ export default function App() {
   };
 
   return (
-    showInterface && (
-      <Box flexDirection="column" width={responsiveWidth} gap={1}>
-        {showHeader && (
-          <Header colors={colors} mode={themeMode} model="GPT-5.2" />
-        )}
-        <Box flexGrow={1} flexDirection="column">
-          <ChatHistory
-            messages={messages}
-            colors={colors}
-            width={responsiveWidth - 2}
-          />
-        </Box>
-        <InputBox
+    <Box flexDirection="column" width={responsiveWidth} gap={1} height={rows}>
+      <Header colors={colors} mode={themeMode} model="GPT-5.2" />
+      <Box flexGrow={1} flexDirection="column">
+        <ChatHistory
+          messages={messages}
           colors={colors}
-          onSubmit={handleInputSubmit}
-          disabled={isStreaming}
+          width={responsiveWidth - 2}
         />
-        {showCommandPalette && (
-          <CommandPalette
-            commands={AVAILABLE_COMMANDS}
-            colors={colors}
-            onSelect={handleCommandSelect}
-          />
-        )}
-        {showFileSelector && (
-          <FileSelector colors={colors} onSelect={handleFileSelect} />
-        )}
       </Box>
-    )
+      {showCommandPalette && (
+        <CommandPalette
+          commands={AVAILABLE_COMMANDS}
+          colors={colors}
+          onSelect={handleCommandSelect}
+        />
+      )}
+      {showFileSelector && (
+        <FileSelector colors={colors} onSelect={handleFileSelect} />
+      )}
+      <InputBox
+        colors={colors}
+        onSubmit={handleInputSubmit}
+        disabled={isStreaming}
+      />
+    </Box>
   );
 }
