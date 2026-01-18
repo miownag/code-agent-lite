@@ -20,7 +20,6 @@ function ChatHistory({ messages, colors, width }: ChatHistoryProps) {
         justifyContent="center"
         alignItems="center"
         width={width}
-        height="100%"
       >
         <Text>No messages yet. Type to chat!</Text>
         <Text> </Text>
@@ -46,9 +45,9 @@ function ChatHistory({ messages, colors, width }: ChatHistoryProps) {
   }
 
   return (
-    <Box flexDirection="column" paddingX={1} width={width}>
+    <Box flexDirection="column" paddingX={1} width={width} gap={1}>
       {messages.map((message, index) => (
-        <Box key={message.id} flexDirection="column" marginBottom={1}>
+        <Box key={message.id} flexDirection="column">
           <Box gap={1}>
             <Text
               bold

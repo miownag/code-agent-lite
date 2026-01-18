@@ -3,7 +3,6 @@ import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import type { ThemeColors } from '@/types';
 import useSelectorStore from '@/stores';
-import Spinner from 'ink-spinner';
 import fs from 'fs';
 import path from 'path';
 import useSafeWidth from '@/hooks/use-safe-width';
@@ -96,31 +95,20 @@ export default function InputBox({
     <Box
       borderStyle="round"
       borderColor={colors.border}
-      paddingX={1}
-      flexDirection="column"
+      gap={1}
+      padding={1}
       width={safeWidth}
+      flexShrink={0}
     >
-      <Box marginBottom={1} overflow="hidden">
-        <Text color={colors.primary} bold>
-          ❯{' '}
-        </Text>
-        <TextInput
-          key={inputKey}
-          value={inputValue}
-          onChange={updateInputValue}
-          placeholder="Type a message... (@ for files, / for commands)"
-        />
-      </Box>
-      <Box justifyContent="space-between" marginTop={1}>
-        <Text color={colors.muted} dimColor>
-          Press `Enter` to send
-        </Text>
-        {disabled && (
-          <Text color={colors.warning}>
-            <Spinner type="star" /> Waiting for response...
-          </Text>
-        )}
-      </Box>
+      <Text color={colors.primary} bold>
+        ❯
+      </Text>
+      <TextInput
+        key={inputKey}
+        value={inputValue}
+        onChange={updateInputValue}
+        placeholder="Type a message... (@ for files, / for commands)"
+      />
     </Box>
   );
 }

@@ -1,6 +1,7 @@
 import { Box, Text } from 'ink';
 import type { MessagePart, MessageRole, ThemeColors } from '@/types';
 import { ToolCallView } from '@/components/tool-call-view';
+import MarkdownText from './markdown-text';
 
 interface MessagePartViewProps {
   part: MessagePart;
@@ -22,21 +23,28 @@ export function MessagePartView({
   if (part.type === 'text') {
     return (
       <Box marginTop={1}>
-        <Text color={colors.text} dimColor={role === 'user'}>
-          {part.content}
-          {isLastPart && isStreaming && <Text color={colors.primary}>▋</Text>}
-        </Text>
+        {role === 'user' ? (
+          <Text dimColor>{part.content}</Text>
+        ) : (
+          <MarkdownText>{part.content}</MarkdownText>
+        )}
+        {role === 'assistant' && isLastPart && isStreaming && (
+          <Text color={colors.primary}>▋</Text>
+        )}
       </Box>
     );
   }
 
   if (part.type === 'tool_call') {
     return (
-      <ToolCallView
-        toolCall={part.toolCall}
-        colors={colors}
-        isLatest={isLatestToolCall}
-      />
+      <Box flexDirection="column">
+        <ToolCallView
+          toolCall={part.toolCall}
+          colors={colors}
+          isLatest={isLatestToolCall}
+        />
+        {isLastPart && isStreaming && <Text color={colors.primary}>▋</Text>}
+      </Box>
     );
   }
 

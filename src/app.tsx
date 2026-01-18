@@ -1,5 +1,4 @@
-import { Box, useApp, useInput } from 'ink';
-import { useCallback, useRef, useState } from 'react';
+import { Box, Text, useApp, useInput } from 'ink';
 import useTheme from '@/hooks/use-theme';
 import useCodeAgent from '@/hooks/use-code-agent';
 import Header from '@/components/header';
@@ -13,6 +12,7 @@ import useSelectorStore from '@/stores';
 import { FileOption } from '@/hooks/use-files-options';
 import useResponsiveWidth from '@/hooks/use-main-width';
 import useFullHeight from '@/hooks/use-full-height';
+import Spinner from 'ink-spinner';
 
 export default function App() {
   const { exit } = useApp();
@@ -129,9 +129,16 @@ export default function App() {
   };
 
   return (
-    <Box flexDirection="column" width={responsiveWidth} gap={1} height={rows}>
+    <Box
+      flexDirection="column"
+      width={responsiveWidth}
+      gap={1}
+      minHeight={rows}
+      paddingY={1}
+      flexShrink={0}
+    >
       <Header colors={colors} mode={themeMode} model="GPT-5.2" />
-      <Box flexGrow={1} flexDirection="column">
+      <Box flexGrow={1}>
         <ChatHistory
           messages={messages}
           colors={colors}
@@ -153,6 +160,17 @@ export default function App() {
         onSubmit={handleInputSubmit}
         disabled={isStreaming}
       />
+      <Box marginLeft={1} marginTop={-1}>
+        {!isStreaming ? (
+          <Text color={colors.muted} dimColor>
+            Press `Enter` to send
+          </Text>
+        ) : (
+          <Text color={colors.warning}>
+            <Spinner type="star" /> Waiting for response...
+          </Text>
+        )}
+      </Box>
     </Box>
   );
 }
