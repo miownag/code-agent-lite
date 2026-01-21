@@ -13,7 +13,7 @@
         "ink": "^6.6.0",
         "ink-big-text": "^2.0.0",
         "ink-gradient": "^3.0.0",
-        "ink-markdown-es": "^1.0.2",
+        "ink-markdown-es": "^1.1.0",
         "ink-select-input": "^6.2.0",
         "ink-spinner": "^5.0.0",
         "ink-text-input": "^6.0.0",
@@ -564,6 +564,8 @@
 
     "hasown": ["hasown@2.0.2", "", { "dependencies": { "function-bind": "^1.1.2" } }, "sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ=="],
 
+    "highlight.js": ["highlight.js@11.11.1", "", {}, "sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w=="],
+
     "hosted-git-info": ["hosted-git-info@5.2.1", "", { "dependencies": { "lru-cache": "^7.5.1" } }, "sha512-xIcQYMnhcx2Nr4JTjsFmwwnr9vldugPy9uVm0o87bjqqWMv9GaqsTeT+i99wTl0mk1uLxJtHxLb8kymqTENQsw=="],
 
     "human-signals": ["human-signals@2.1.0", "", {}, "sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw=="],
@@ -592,7 +594,7 @@
 
     "ink-gradient": ["ink-gradient@3.0.0", "", { "dependencies": { "@types/gradient-string": "^1.1.2", "gradient-string": "^2.0.2", "prop-types": "^15.8.1", "strip-ansi": "^7.1.0" }, "peerDependencies": { "ink": ">=4" } }, "sha512-OVyPBovBxE1tFcBhSamb+P1puqDP6pG3xFe2W9NiLgwUZd9RbcjBeR7twLbliUT9navrUstEf1ZcPKKvx71BsQ=="],
 
-    "ink-markdown-es": ["ink-markdown-es@1.0.2", "", { "dependencies": { "dedent": "^1.7.1", "marked": "^16.4.2" }, "peerDependencies": { "ink": "^6", "react": "^19" } }, "sha512-CgvZ0FvOwGO7y8ky3KOhgKBd3B+J44UPHntq3bZmdUtFnPSUN89nOnS8huVYyqZ4QXfDA4XDCn5YculTlo43Zw=="],
+    "ink-markdown-es": ["ink-markdown-es@1.1.0", "", { "dependencies": { "dedent": "^1.7.1", "highlight.js": "^11.11.1", "marked": "^16.4.2" }, "peerDependencies": { "ink": "^6", "react": "^19" } }, "sha512-4ItGYV1zl2w+eNdcSwQawilSsAeSt1hjXFEzWcdw0TSMHMs9U8hZyT1oIrdRa/faB6RedLszHs5mnZOt5APdTA=="],
 
     "ink-select-input": ["ink-select-input@6.2.0", "", { "dependencies": { "figures": "^6.1.0", "to-rotated": "^1.0.0" }, "peerDependencies": { "ink": ">=5.0.0", "react": ">=18.0.0" } }, "sha512-304fZXxkpYxJ9si5lxRCaX01GNlmPBgOZumXXRnPYbHW/iI31cgQynqk2tRypGLOF1cMIwPUzL2LSm6q4I5rQQ=="],
 
