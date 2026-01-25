@@ -21,6 +21,7 @@
   ],
   "dependencies": {
     "@langchain/core": "^1.1.15",
+    "@langchain/mcp-adapters": "^1.1.2",
     "@langchain/openai": "^1.2.2",
     "deepagents": "^1.5.0",
     "diff": "^8.0.3",

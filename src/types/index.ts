@@ -59,3 +59,6 @@ export interface FileItem {
   path: string;
   name: string;
 }
+
+// Re-export MCP types
+export * from './mcp';

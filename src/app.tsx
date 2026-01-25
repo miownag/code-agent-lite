@@ -6,6 +6,7 @@ import ChatHistory from '@/components/chat-history.js';
 import InputBox from '@/components/input-box';
 import CommandPalette from '@/components/command-palette';
 import FileSelector from '@/components/file-selector';
+import MCPConfigPanel from '@/components/mcp-config-panel';
 import { AVAILABLE_COMMANDS } from '@/services/mock-agent';
 import type { Command } from '@/types';
 import useSelectorStore from '@/stores';
@@ -22,7 +23,9 @@ export default function App() {
     inputValue,
     showCommandPalette,
     showFileSelector,
+    showMcpConfig,
     updateShowCommandPalette,
+    updateShowMcpConfig,
     updateFileSelectorPath,
     resetFileSelector,
     updateInputValue,
@@ -32,7 +35,9 @@ export default function App() {
     'inputValue',
     'showCommandPalette',
     'showFileSelector',
+    'showMcpConfig',
     'updateShowCommandPalette',
+    'updateShowMcpConfig',
     'updateFileSelectorPath',
     'resetFileSelector',
     'updateInputValue',
@@ -53,6 +58,8 @@ export default function App() {
         resetFileSelector();
       }
 
+      // Note: MCP panel handles its own Esc key internally
+
       if ((key.ctrl && input === 'c') || (key.ctrl && input === 'd')) {
         exit();
       }
@@ -62,7 +69,7 @@ export default function App() {
         toggleLatestToolCallCollapsed();
       }
     },
-    { isActive: true },
+    { isActive: !showMcpConfig }, // Disable when MCP panel is open
   );
 
   const handleInputSubmit = (value: string) => {
@@ -90,7 +97,7 @@ export default function App() {
           clearMessages();
           break;
         case '/mcp':
-          sendMessage('MCP Tools: Read, Write, Edit, Bash, Grep, Glob');
+          updateShowMcpConfig(true);
           break;
         case '/model':
           sendMessage(
@@ -155,10 +162,12 @@ export default function App() {
       {showFileSelector && (
         <FileSelector colors={colors} onSelect={handleFileSelect} />
       )}
+      {showMcpConfig && <MCPConfigPanel colors={colors} />}
       <InputBox
         colors={colors}
         onSubmit={handleInputSubmit}
-        disabled={isStreaming}
+        isStreaming={isStreaming}
+        disabled={showMcpConfig}
       />
       <Box marginLeft={1} marginTop={-1}>
         {!isStreaming ? (

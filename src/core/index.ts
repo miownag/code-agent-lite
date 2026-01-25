@@ -1,7 +1,9 @@
 import { Messages } from '@langchain/langgraph';
 import { ChatOpenAI } from '@langchain/openai';
-import { createDeepAgent, DeepAgent, FilesystemBackend } from 'deepagents';
+import { createDeepAgent, FilesystemBackend } from 'deepagents';
 import type { ToolCall } from '@/types';
+import { mcpConfigService } from '@/services/mcp-config';
+import { mcpClientManager } from './mcp-client';
 
 export type StreamCallbacks = {
   onTextChunk?: (chunk: string) => void;
@@ -10,29 +12,103 @@ export type StreamCallbacks = {
   onToolCallError?: (toolCallId: string, error: string) => void;
 };
 
-class CodeAgent {
-  private agent: DeepAgent;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyDeepAgent = any;
 
-  constructor() {
-    this.agent = createDeepAgent({
-      model: new ChatOpenAI({
-        model: 'glm-4.7',
-        apiKey: 'HMsBHF3WyC4kfrZ3wEwn1lTl@4677',
-        configuration: {
-          baseURL: 'http://v2.open.venus.oa.com/llmproxy',
-        },
-      }),
-      backend: new FilesystemBackend({ rootDir: '.', virtualMode: true }),
+class CodeAgent {
+  private agent: AnyDeepAgent = null;
+  private initialized = false;
+  private initializing: Promise<void> | null = null;
+
+  private createModel() {
+    return new ChatOpenAI({
+      model: 'glm-4.7',
+      apiKey: 'HMsBHF3WyC4kfrZ3wEwn1lTl@4677',
+      configuration: {
+        baseURL: 'http://v2.open.venus.oa.com/llmproxy',
+      },
     });
   }
 
+  async initialize(): Promise<void> {
+    // Return early if already initialized
+    if (this.initialized && this.agent) {
+      return;
+    }
+
+    // If initialization is in progress, wait for it
+    if (this.initializing) {
+      return this.initializing;
+    }
+
+    // Start initialization
+    this.initializing = this.doInitialize();
+
+    try {
+      await this.initializing;
+    } finally {
+      this.initializing = null;
+    }
+  }
+
+  private async doInitialize(): Promise<void> {
+    // Load MCP configuration
+    const servers = mcpConfigService.getEnabledServers();
+
+    // Connect to MCP servers if any are configured
+    if (servers.length > 0) {
+      try {
+        await mcpClientManager.connect(servers);
+      } catch (error) {
+        // Log error but continue - agent will work without MCP tools
+        console.error('Failed to connect to MCP servers:', error);
+      }
+    }
+
+    // Get MCP tools
+    const mcpTools = mcpClientManager.getTools();
+
+    // Create the agent with MCP tools
+    this.agent = createDeepAgent({
+      model: this.createModel(),
+      backend: new FilesystemBackend({ rootDir: '.', virtualMode: true }),
+      tools: mcpTools.length > 0 ? mcpTools : undefined,
+    });
+
+    this.initialized = true;
+  }
+
+  async reinitialize(): Promise<void> {
+    // Disconnect existing MCP connections
+    await mcpClientManager.disconnect();
+
+    // Reset state
+    this.agent = null;
+    this.initialized = false;
+
+    // Re-initialize
+    await this.initialize();
+  }
+
   async run(messages: Messages) {
+    await this.initialize();
+
+    if (!this.agent) {
+      throw new Error('Agent not initialized');
+    }
+
     return this.agent.invoke({
       messages,
     });
   }
 
   async streamRun(messages: Messages, callbacks: StreamCallbacks) {
+    await this.initialize();
+
+    if (!this.agent) {
+      throw new Error('Agent not initialized');
+    }
+
     const stream = await this.agent.stream({ messages });
     let lastContent = '';
     const pendingToolCalls = new Set<string>();
@@ -113,6 +189,17 @@ class CodeAgent {
       }
     }
   }
+
+  // Get current MCP server states
+  getMcpServerStates() {
+    return mcpClientManager.getServerStates();
+  }
+
+  // Check if MCP is connected
+  isMcpConnected() {
+    return mcpClientManager.isConnected();
+  }
 }
 
-export default new CodeAgent();
+const codeAgent = new CodeAgent();
+export default codeAgent;

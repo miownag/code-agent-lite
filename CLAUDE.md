@@ -20,3 +20,4 @@ stores/ # Zustand Store ├── types.ts # Type Definitions
 ## Tips
 
 - Use Context7 MCP server to know how to use Deep Agents
+- English comment only

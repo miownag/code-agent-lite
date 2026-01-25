@@ -10,12 +10,14 @@ import useSafeWidth from '@/hooks/use-safe-width';
 interface InputBoxProps {
   colors: ThemeColors;
   onSubmit: (value: string) => void;
+  isStreaming?: boolean;
   disabled?: boolean;
 }
 
 export default function InputBox({
   colors,
   onSubmit,
+  isStreaming = false,
   disabled = false,
 }: InputBoxProps) {
   const safeWidth = useSafeWidth(2); // Reserve 2 chars for borders
@@ -77,7 +79,7 @@ export default function InputBox({
         !showCommandPalette &&
         !showFileSelector
       ) {
-        if (inputValue.trim() && !disabled) {
+        if (inputValue.trim() && !isStreaming && !disabled) {
           onSubmit(inputValue);
           updateInputValue('');
         }
@@ -88,8 +90,12 @@ export default function InputBox({
         !showCommandPalette && updateShowFileSelector(true);
       }
     },
-    { isActive: !showFileSelector },
+    { isActive: !showFileSelector && !disabled },
   );
+
+  const handleOnUpdate = (value: string) => {
+    !disabled && updateInputValue(value);
+  };
 
   return (
     <Box
@@ -106,7 +112,7 @@ export default function InputBox({
       <TextInput
         key={inputKey}
         value={inputValue}
-        onChange={updateInputValue}
+        onChange={handleOnUpdate}
         placeholder="Type a message... (@ for files, / for commands)"
       />
     </Box>
