@@ -1,9 +1,10 @@
-import { Messages } from '@langchain/langgraph';
+import { MemorySaver, Messages } from '@langchain/langgraph';
 import { ChatOpenAI } from '@langchain/openai';
-import { createDeepAgent, FilesystemBackend } from 'deepagents';
+import { createDeepAgent, DeepAgent, FilesystemBackend } from 'deepagents';
 import type { ToolCall } from '@/types';
 import { mcpConfigService } from '@/services/mcp-config';
 import { mcpClientManager } from './mcp-client';
+import path from 'path';
 
 export type StreamCallbacks = {
   onTextChunk?: (chunk: string) => void;
@@ -12,11 +13,8 @@ export type StreamCallbacks = {
   onToolCallError?: (toolCallId: string, error: string) => void;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyDeepAgent = any;
-
 class CodeAgent {
-  private agent: AnyDeepAgent = null;
+  private agent: DeepAgent | null = null;
   private initialized = false;
   private initializing: Promise<void> | null = null;
 
@@ -68,12 +66,21 @@ class CodeAgent {
     // Get MCP tools
     const mcpTools = mcpClientManager.getTools();
 
+    const checkpointer = new MemorySaver();
+
     // Create the agent with MCP tools
     this.agent = createDeepAgent({
       model: this.createModel(),
       backend: new FilesystemBackend({ rootDir: '.', virtualMode: true }),
+      memory: ['./AGENTS.md', './CLAUDE.md'],
+      skills: [path.join(process.cwd(), '.code-agent-lite/skills')],
+      // interruptOn: {
+      //   write_file: true,
+      //   delete_file: true,
+      // },
       tools: mcpTools.length > 0 ? mcpTools : undefined,
-    });
+      checkpointer,
+    }) as DeepAgent;
 
     this.initialized = true;
   }
@@ -109,7 +116,14 @@ class CodeAgent {
       throw new Error('Agent not initialized');
     }
 
-    const stream = await this.agent.stream({ messages });
+    const stream = await this.agent.stream(
+      { messages },
+      {
+        configurable: {
+          thread_id: `thread-${Date.now()}`,
+        },
+      },
+    );
     let lastContent = '';
     const pendingToolCalls = new Set<string>();
 

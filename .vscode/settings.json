@@ -1,7 +1,7 @@
 {
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "cSpell.words": ["deepagents", "langchain", "langgraph"],
+  "cSpell.words": ["checkpointer", "deepagents", "langchain", "langgraph"],
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   }

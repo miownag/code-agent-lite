@@ -1,5 +1,5 @@
 import { Box, Text, useInput } from 'ink';
-import type { ThemeColors, MCPFormData, MCPFormErrors, MCPServerConfig } from '@/types';
+import type { ThemeColors, MCPFormData } from '@/types';
 import useSelectorStore from '@/stores';
 import useSafeWidth from '@/hooks/use-safe-width';
 import MCPServerList from './mcp-server-list';

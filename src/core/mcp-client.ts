@@ -1,10 +1,6 @@
 import { MultiServerMCPClient } from '@langchain/mcp-adapters';
 import type { DynamicStructuredTool } from '@langchain/core/tools';
-import type {
-  MCPServerConfig,
-  MCPServerState,
-  MCPServerStatus,
-} from '@/types';
+import type { MCPServerConfig, MCPServerState, MCPServerStatus } from '@/types';
 
 type StdioConnection = {
   transport: 'stdio';
@@ -134,7 +130,11 @@ class MCPClientManager {
     return this.serverStates.get(serverId);
   }
 
-  updateServerState(serverId: string, status: MCPServerStatus, error?: string): void {
+  updateServerState(
+    serverId: string,
+    status: MCPServerStatus,
+    error?: string,
+  ): void {
     this.serverStates.set(serverId, { status, error });
   }
 
