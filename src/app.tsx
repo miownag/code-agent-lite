@@ -1,4 +1,6 @@
 import { Box, Text, useApp, useInput } from 'ink';
+import path from 'path';
+import fs from 'fs';
 import useTheme from '@/hooks/use-theme';
 import useCodeAgent from '@/hooks/use-code-agent';
 import Header from '@/components/header';
@@ -72,6 +74,19 @@ export default function App() {
     { isActive: !showMcpConfig }, // Disable when MCP panel is open
   );
 
+  // Convert @-prefixed file paths to absolute paths if file exists
+  const processFileReferences = (input: string): string => {
+    const workDir = process.cwd();
+    // Match @<path> followed by a space (path cannot contain spaces)
+    return input.replace(/@([^\s@]+)\s/g, (match, relativePath) => {
+      const absolutePath = path.join(workDir, relativePath);
+      if (fs.existsSync(absolutePath)) {
+        return `${absolutePath} `;
+      }
+      return match;
+    });
+  };
+
   const handleInputSubmit = (value: string) => {
     const trimmed = value.trim();
 
@@ -81,7 +96,8 @@ export default function App() {
     ) {
       return;
     } else {
-      sendMessage(trimmed);
+      const processed = processFileReferences(trimmed);
+      sendMessage(processed);
     }
   };
 
