@@ -9,6 +9,7 @@ import InputBox from '@/components/input-box';
 import CommandPalette from '@/components/command-palette';
 import FileSelector from '@/components/file-selector';
 import MCPConfigPanel from '@/components/mcp-config-panel';
+import ProviderConfigPanel from '@/components/provider-config-panel';
 import { AVAILABLE_COMMANDS } from '@/services/mock-agent';
 import type { Command } from '@/types';
 import useSelectorStore from '@/stores';
@@ -26,8 +27,10 @@ export default function App() {
     showCommandPalette,
     showFileSelector,
     showMcpConfig,
+    showProviderConfig,
     updateShowCommandPalette,
     updateShowMcpConfig,
+    updateShowProviderConfig,
     updateFileSelectorPath,
     resetFileSelector,
     updateInputValue,
@@ -38,8 +41,10 @@ export default function App() {
     'showCommandPalette',
     'showFileSelector',
     'showMcpConfig',
+    'showProviderConfig',
     'updateShowCommandPalette',
     'updateShowMcpConfig',
+    'updateShowProviderConfig',
     'updateFileSelectorPath',
     'resetFileSelector',
     'updateInputValue',
@@ -60,7 +65,7 @@ export default function App() {
         resetFileSelector();
       }
 
-      // Note: MCP panel handles its own Esc key internally
+      // Note: MCP and Provider panels handle their own Esc key internally
 
       if ((key.ctrl && input === 'c') || (key.ctrl && input === 'd')) {
         exit();
@@ -71,7 +76,7 @@ export default function App() {
         toggleLatestToolCallCollapsed();
       }
     },
-    { isActive: !showMcpConfig }, // Disable when MCP panel is open
+    { isActive: !showMcpConfig && !showProviderConfig }, // Disable when config panels are open
   );
 
   // Convert @-prefixed file paths to absolute paths if file exists
@@ -106,7 +111,7 @@ export default function App() {
       switch (command.name) {
         case '/help':
           sendMessage(
-            'Help: Available commands are /help, /clear, /mcp, /model, /settings, /theme',
+            'Help: Available commands are /help, /clear, /mcp, /provider, /model, /settings, /theme',
           );
           break;
         case '/clear':
@@ -114,6 +119,9 @@ export default function App() {
           break;
         case '/mcp':
           updateShowMcpConfig(true);
+          break;
+        case '/provider':
+          updateShowProviderConfig(true);
           break;
         case '/model':
           sendMessage(
@@ -179,11 +187,12 @@ export default function App() {
         <FileSelector colors={colors} onSelect={handleFileSelect} />
       )}
       {showMcpConfig && <MCPConfigPanel colors={colors} />}
+      {showProviderConfig && <ProviderConfigPanel colors={colors} />}
       <InputBox
         colors={colors}
         onSubmit={handleInputSubmit}
         isStreaming={isStreaming}
-        disabled={showMcpConfig}
+        disabled={showMcpConfig || showProviderConfig}
       />
       <Box marginLeft={1} marginTop={-1}>
         {!isStreaming ? (

@@ -1,8 +1,9 @@
 import { MemorySaver, Messages } from '@langchain/langgraph';
-import { ChatOpenAI } from '@langchain/openai';
 import { createDeepAgent, DeepAgent, FilesystemBackend } from 'deepagents';
 import type { ToolCall } from '@/types';
 import { mcpConfigService } from '@/services/mcp-config';
+import { providerConfigService } from '@/services/provider-config';
+import { modelFactory } from './model-factory';
 import { mcpClientManager } from './mcp-client';
 import path from 'path';
 
@@ -19,13 +20,24 @@ class CodeAgent {
   private initializing: Promise<void> | null = null;
 
   private createModel() {
-    return new ChatOpenAI({
-      model: 'glm-4.7',
-      apiKey: 'HMsBHF3WyC4kfrZ3wEwn1lTl@4677',
-      configuration: {
-        baseURL: 'http://v2.open.venus.oa.com/llmproxy',
-      },
-    });
+    // Priority: 1. provider.json config → 2. environment variables → 3. null (show config form)
+
+    // 1. Try to get provider from config file
+    const providerConfig = providerConfigService.getDefaultProvider();
+    if (providerConfig) {
+      const resolved =
+        providerConfigService.resolveProviderSettings(providerConfig);
+      return modelFactory.createModel(resolved);
+    }
+
+    // 2. Try to get provider from environment variables
+    const envProvider = providerConfigService.getProviderFromEnv();
+    if (envProvider) {
+      return modelFactory.createModel(envProvider);
+    }
+
+    // 3. No provider configured - throw error to trigger config form
+    throw new Error('NO_PROVIDER_CONFIGURED');
   }
 
   async initialize(): Promise<void> {

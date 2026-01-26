@@ -2,8 +2,10 @@ import { pick } from 'es-toolkit';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
 import type { MCPServerConfig, MCPServerState } from '@/types';
+import type { ProviderConfig } from '@/types/provider';
 
 export type MCPConfigMode = 'list' | 'add' | 'edit';
+export type ProviderConfigMode = 'list' | 'add' | 'edit';
 
 type State = {
   inputValue: string;
@@ -20,6 +22,13 @@ type State = {
   mcpServerStates: Record<string, MCPServerState>;
   mcpIsConnecting: boolean;
   mcpError: string | null;
+  // Provider state
+  showProviderConfig: boolean;
+  providerConfigMode: ProviderConfigMode;
+  providerEditingId: string | null;
+  providers: ProviderConfig[];
+  providerError: string | null;
+  providerSetupRequired: boolean;
 };
 
 type Action = {
@@ -44,6 +53,17 @@ type Action = {
   setMcpIsConnecting: (connecting: boolean) => void;
   setMcpError: (error: string | null) => void;
   closeMcpConfig: () => void;
+  // Provider actions
+  updateShowProviderConfig: (show: boolean) => void;
+  setProviderConfigMode: (mode: ProviderConfigMode) => void;
+  setProviderEditingId: (id: string | null) => void;
+  setProviders: (providers: ProviderConfig[]) => void;
+  addProvider: (provider: ProviderConfig) => void;
+  updateProvider: (id: string, updates: Partial<ProviderConfig>) => void;
+  removeProvider: (id: string) => void;
+  setProviderError: (error: string | null) => void;
+  setProviderSetupRequired: (required: boolean) => void;
+  closeProviderConfig: () => void;
 };
 
 const useCodeStore = create<State & Action>((set) => ({
@@ -61,6 +81,13 @@ const useCodeStore = create<State & Action>((set) => ({
   mcpServerStates: {},
   mcpIsConnecting: false,
   mcpError: null,
+  // Provider initial state
+  showProviderConfig: false,
+  providerConfigMode: 'list',
+  providerEditingId: null,
+  providers: [],
+  providerError: null,
+  providerSetupRequired: false,
 
   updateInputValue: (inputValue) => set({ inputValue }),
   updateShowCommandPalette: (showCommandPalette) => set({ showCommandPalette }),
@@ -101,6 +128,34 @@ const useCodeStore = create<State & Action>((set) => ({
       mcpConfigMode: 'list',
       mcpEditingServerId: null,
       mcpError: null,
+    }),
+
+  // Provider actions
+  updateShowProviderConfig: (showProviderConfig) => set({ showProviderConfig }),
+  setProviderConfigMode: (providerConfigMode) => set({ providerConfigMode }),
+  setProviderEditingId: (providerEditingId) => set({ providerEditingId }),
+  setProviders: (providers) => set({ providers }),
+  addProvider: (provider) =>
+    set((state) => ({ providers: [...state.providers, provider] })),
+  updateProvider: (id, updates) =>
+    set((state) => ({
+      providers: state.providers.map((p) =>
+        p.id === id ? ({ ...p, ...updates } as ProviderConfig) : p,
+      ),
+    })),
+  removeProvider: (id) =>
+    set((state) => ({
+      providers: state.providers.filter((p) => p.id !== id),
+    })),
+  setProviderError: (providerError) => set({ providerError }),
+  setProviderSetupRequired: (providerSetupRequired) =>
+    set({ providerSetupRequired }),
+  closeProviderConfig: () =>
+    set({
+      showProviderConfig: false,
+      providerConfigMode: 'list',
+      providerEditingId: null,
+      providerError: null,
     }),
 }));
 

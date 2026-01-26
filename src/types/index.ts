@@ -62,3 +62,6 @@ export interface FileItem {
 
 // Re-export MCP types
 export * from './mcp';
+
+// Re-export Provider types
+export * from './provider';

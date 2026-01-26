@@ -123,7 +123,8 @@ export async function streamResponse(
 export const AVAILABLE_COMMANDS = [
   { name: '/help', description: 'Show available commands' },
   { name: '/clear', description: 'Clear chat history' },
-  { name: '/mcp', description: 'Show MCP tools' },
+  { name: '/mcp', description: 'Configure MCP servers' },
+  { name: '/provider', description: 'Configure LLM providers' },
   { name: '/model', description: 'Switch AI model' },
   { name: '/settings', description: 'Open settings' },
   { name: '/theme', description: 'Toggle theme' },

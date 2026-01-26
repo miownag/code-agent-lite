@@ -1,6 +1,8 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Message, ToolCall, MessagePart } from '@/types';
 import codeAgent from '@/core';
+import { providerConfigService } from '@/services/provider-config';
+import useSelectorStore from '@/stores';
 
 function getTextContent(parts: MessagePart[]): string {
   return parts
@@ -13,8 +15,21 @@ export default function useCodeAgent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const messagesRef = useRef<Message[]>([]);
+  const { updateShowProviderConfig, setProviderSetupRequired } = useSelectorStore([
+    'updateShowProviderConfig',
+    'setProviderSetupRequired',
+  ]);
 
   messagesRef.current = messages;
+
+  // Check if provider is configured on mount
+  useEffect(() => {
+    const hasProvider = providerConfigService.hasValidProvider();
+    if (!hasProvider) {
+      setProviderSetupRequired(true);
+      updateShowProviderConfig(true);
+    }
+  }, [updateShowProviderConfig, setProviderSetupRequired]);
 
   const addUserMessage = useCallback((content: string) => {
     const message: Message = {
@@ -110,34 +125,61 @@ export default function useCodeAgent() {
     async (content: string) => {
       if (isStreaming) return;
 
+      // Check if provider is configured
+      if (!providerConfigService.hasValidProvider()) {
+        setProviderSetupRequired(true);
+        updateShowProviderConfig(true);
+        return;
+      }
+
       addUserMessage(content);
       setIsStreaming(true);
 
       const messageId = startAssistantMessage();
 
-      // 从 parts 中提取文本内容传给 agent
-      const agentMessages = messagesRef.current.map((m) => ({
-        role: m.role as 'user' | 'assistant' | 'system',
-        content: getTextContent(m.parts),
-      }));
-      agentMessages.push({ role: 'user', content });
+      try {
+        // Extract text content from parts to pass to agent
+        const agentMessages = messagesRef.current.map((m) => ({
+          role: m.role as 'user' | 'assistant' | 'system',
+          content: getTextContent(m.parts),
+        }));
+        agentMessages.push({ role: 'user', content });
 
-      await codeAgent.streamRun(agentMessages, {
-        onTextChunk: (chunk) => appendText(messageId, chunk),
-        onToolCallStart: (toolCall) => insertToolCall(messageId, toolCall),
-        onToolCallComplete: (toolCallId, result) =>
-          updateToolCall(messageId, toolCallId, {
-            status: 'success',
-            endTime: Date.now(),
-            output: result,
-          }),
-        onToolCallError: (toolCallId, error) =>
-          updateToolCall(messageId, toolCallId, {
-            status: 'error',
-            endTime: Date.now(),
-            output: error,
-          }),
-      });
+        await codeAgent.streamRun(agentMessages, {
+          onTextChunk: (chunk) => appendText(messageId, chunk),
+          onToolCallStart: (toolCall) => insertToolCall(messageId, toolCall),
+          onToolCallComplete: (toolCallId, result) =>
+            updateToolCall(messageId, toolCallId, {
+              status: 'success',
+              endTime: Date.now(),
+              output: result,
+            }),
+          onToolCallError: (toolCallId, error) =>
+            updateToolCall(messageId, toolCallId, {
+              status: 'error',
+              endTime: Date.now(),
+              output: error,
+            }),
+        });
+      } catch (error) {
+        // Handle provider configuration errors
+        if (
+          error instanceof Error &&
+          error.message.includes('No provider configured')
+        ) {
+          setProviderSetupRequired(true);
+          updateShowProviderConfig(true);
+          // Remove the assistant message that was started
+          setMessages((prev) => prev.filter((m) => m.id !== messageId));
+          setIsStreaming(false);
+          return;
+        }
+        // For other errors, show in the message
+        appendText(
+          messageId,
+          `\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      }
 
       finishStreaming(messageId);
     },
@@ -149,6 +191,8 @@ export default function useCodeAgent() {
       insertToolCall,
       updateToolCall,
       finishStreaming,
+      updateShowProviderConfig,
+      setProviderSetupRequired,
     ],
   );
 
